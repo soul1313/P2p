@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Калькулятор Прибыли Ultimate</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141824;
+            --bg-card: #1a1f2e;
+            --accent-green: #00ff88;
+            --accent-cyan: #00d4ff;
+            --accent-red: #ff3366;
+            --accent-yellow: #ffd700;
+            --accent-purple: #a855f7;
+            --text-primary: #ffffff;
+            --text-secondary: #8892a6;
+            --border: #2a3142;
+            --shadow: rgba(0, 255, 136, 0.15);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1a1f2e;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="light"] body {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 50%);
+        }
+
+        [data-theme="dark"] body {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-green);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-green);
+        }
+
+        .theme-toggle-slider {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        [data-theme="light"] .theme-toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+            transition: background 0.3s ease, border 0.3s ease;
+        }
+
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent-green);
+            border-radius: 2px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px var(--shadow);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--accent-green);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--accent-green);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .commission-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .commission-inputs.active {
+            max-height: 200px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
+            border: 2px solid var(--accent-green);
+            border-radius: 16px;
+            padding: 24px;
+            animation: pulse 0.6s ease-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 12px;
+            text-shadow: 0 0 30px var(--shadow);
+        }
+
+        .result-value.negative {
+            color: var(--accent-red);
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--shadow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-green);
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.profit {
+            color: var(--accent-green);
+        }
+
+        .stat-value.loss {
+            color: var(--accent-red);
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* Goals */
+        .goal-input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .goal-input-group input {
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .goal-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .goal-stat {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .goal-stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .goal-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        /* Achievements */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .achievement {
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement.unlocked {
+            border-color: var(--accent-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(0, 212, 255, 0.05));
+        }
+
+        .achievement.locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-title {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .achievement-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 16px;
+        }
+
+        /* History */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-small:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .btn-small.danger:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-green);
+        }
+
+        .history-item {
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .history-item:hover {
+            border-color: var(--accent-green);
+            transform: translateX(4px);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .history-delete {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .history-delete:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .history-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .history-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-detail-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-detail-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .history-profit {
+            color: var(--accent-green);
+        }
+
+        .history-loss {
+            color: var(--accent-red);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Share Card */
+        .share-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 40px;
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .share-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .share-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .share-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .share-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .share-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-value {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .achievements-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .goal-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">P2P Tools Ultimate</div>
+                <h1>Калькулятор прибыли</h1>
+                <p class="subtitle">Полный контроль над вашими P2P сделками</p>
+            </div>
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <div class="theme-toggle-slider">🌙</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Calculator Card -->
+            <div class="card">
+                <div class="section">
+                    <div class="section-title">⚡ Параметры сделки</div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="amount">Сумма вложений</label>
+                            <input type="number" id="amount" placeholder="5000" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="buyRate">Курс покупки</label>
+                            <input type="number" id="buyRate" placeholder="77.80" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="sellRate">Курс продажи</label>
+                            <input type="number" id="sellRate" placeholder="87.20" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="currency">Валюта</label>
+                            <input type="text" id="currency" placeholder="USDT" value="USDT">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">💳 Комиссии (опционально)</div>
+                    <div class="checkbox-group" onclick="toggleCommissions()">
+                        <input type="checkbox" id="useCommissions">
+                        <label for="useCommissions">Учитывать комиссии</label>
+                    </div>
+                    <div class="commission-inputs" id="commissionInputs">
+                        <div class="input-group">
+                            <label for="exchangeFee">Комиссия биржи (%)</label>
+                            <input type="number" id="exchangeFee" placeholder="0.1" step="0.01" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="paymentFee">Комиссия платежки (%)</label>
+                            <input type="number" id="paymentFee" placeholder="0" step="0.01" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="result"></div>
+            </div>
+
+            <!-- Statistics & Goals Card -->
+            <div class="card">
+                <div class="section">
+                    <div class="section-title">📊 Общая статистика</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-label">Всего сделок</div>
+                            <div class="stat-value" id="totalTrades">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-label">Общая прибыль</div>
+                            <div class="stat-value profit" id="totalProfit">0 ₽</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-label">Средняя доходность</div>
+                            <div class="stat-value" id="avgPercent">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-label">Лучшая сделка</div>
+                            <div class="stat-value profit" id="bestTrade">0 ₽</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">🎯 Цель месяца</div>
+                    <div class="goal-input-group">
+                        <input type="number" id="goalAmount" placeholder="50000" step="1000">
+                        <button class="btn-secondary" style="width: auto; padding: 14px 24px; margin: 0;" onclick="setGoal()">Установить</button>
+                    </div>
+                    <div id="goalProgress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="main-grid">
+            <div class="card">
+                <div class="section-title">📈 График прибыли</div>
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">🏆 Достижения</div>
+                <div class="achievements-grid" id="achievementsGrid"></div>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card">
+            <div class="history-header">
+                <div class="section-title" style="margin: 0;">📜 История сделок</div>
+                <div class="history-actions">
+                    <button class="btn-small" onclick="shareStats()">📤 Поделиться</button>
+                    <button class="btn-small" onclick="exportToCSV()">📥 Экспорт</button>
+                    <button class="btn-small danger" onclick="clearHistory()">🗑️ Очистить</button>
+                </div>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">Пока нет сделок. Рассчитайте прибыль и сохраните первую сделку!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            © 2026 P2P Calculator Ultimate. Все права защищены. | Создано для P2P-трейдеров 💰
+        </div>
+    </div>
+
+    <script>
+        // Load data from localStorage
+        let transactions = JSON.parse(localStorage.getItem('p2pTransactions')) || [];
+        let goal = JSON.parse(localStorage.getItem('p2pGoal')) || null;
+        let achievements = JSON.parse(localStorage.getItem('p2pAchievements')) || {};
+        let theme = localStorage.getItem('p2pTheme') || 'dark';
+
+        // Set theme on load
+        document.body.setAttribute('data-theme', theme);
+        updateThemeIcon();
+
+        const achievementsList = [
+            { id: 'first', icon: '🎉', title: 'Первая сделка!', desc: 'Сохранить первую сделку', check: () => transactions.length >= 1 },
+            { id: 'five', icon: '💪', title: 'Опытный', desc: '5 сделок', check: () => transactions.length >= 5 },
+            { id: 'ten', icon: '🔥', title: 'Профи', desc: '10 сделок', check: () => transactions.length >= 10 },
+            { id: 'profit1k', icon: '💰', title: 'Первая тысяча', desc: 'Заработать 1000₽', check: () => getTotalProfit() >= 1000 },
+            { id: 'profit10k', icon: '💎', title: 'Серьезный заработок', desc: 'Заработать 10000₽', check: () => getTotalProfit() >= 10000 },
+            { id: 'streak', icon: '⚡', title: 'Безупречно', desc: '5 прибыльных сделок подряд', check: () => checkWinStreak(5) },
+            { id: 'daily', icon: '📅', title: 'Ежедневник', desc: 'Сделка каждый день недели', check: () => checkDailyStreak() },
+            { id: 'percent', icon: '📈', title: 'Мастер прибыли', desc: 'Сделка с доходностью 20%+', check: () => transactions.some(t => t.profitPercent >= 20) },
+            { id: 'trader', icon: '🏆', title: 'Легенда P2P', desc: '50 сделок', check: () => transactions.length >= 50 }
+        ];
+
+        const inputs = ['amount', 'buyRate', 'sellRate', 'exchangeFee', 'paymentFee'];
+        
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateProfit);
+        });
+
+        document.getElementById('useCommissions').addEventListener('change', calculateProfit);
+
+        function toggleTheme() {
+            theme = theme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('p2pTheme', theme);
+            updateThemeIcon();
+            updateChart();
+        }
+
+        function updateThemeIcon() {
+            const slider = document.querySelector('.theme-toggle-slider');
+            slider.textContent = theme === 'dark' ? '🌙' : '☀️';
+        }
+
+        function toggleCommissions() {
+            const checkbox = document.getElementById('useCommissions');
+            checkbox.checked = !checkbox.checked;
+            const commissionInputs = document.getElementById('commissionInputs');
+            commissionInputs.classList.toggle('active', checkbox.checked);
+            calculateProfit();
+        }
+
+        function calculateProfit() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const buyRate = parseFloat(document.getElementById('buyRate').value) || 0;
+            const sellRate = parseFloat(document.getElementById('sellRate').value) || 0;
+            const currency = document.getElementById('currency').value || 'USDT';
+            const useCommissions = document.getElementById('useCommissions').checked;
+            const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0;
+            const paymentFee = parseFloat(document.getElementById('paymentFee').value) || 0;
+
+            if (amount === 0 || buyRate === 0 || sellRate === 0) {
+                document.getElementById('result').innerHTML = '';
+                return;
+            }
+
+            const cryptoAmount = amount / buyRate;
+            let sellAmount = cryptoAmount * sellRate;
+            
+            let totalFees = 0;
+            if (useCommissions) {
+                const exchangeFeeAmount = (amount * exchangeFee / 100) + (sellAmount * exchangeFee / 100);
+                const paymentFeeAmount = (amount * paymentFee / 100) + (sellAmount * paymentFee / 100);
+                totalFees = exchangeFeeAmount + paymentFeeAmount;
+                sellAmount -= (sellAmount * exchangeFee / 100) + (sellAmount * paymentFee / 100);
+            }
+            
+            const profit = sellAmount - amount - (useCommissions ? (amount * exchangeFee / 100) + (amount * paymentFee / 100) : 0);
+            const profitPercent = (profit / amount) * 100;
+            
+            const isNegative = profit < 0;
+            
+            document.getElementById('result').innerHTML = `
+                <div class="result-card">
+                    <div class="result-label">Чистая прибыль</div>
+                    <div class="result-value ${isNegative ? 'negative' : ''}">
+                        ${isNegative ? '−' : '+'}${Math.abs(profit).toLocaleString('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ₽
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Доходность</div>
+                            <div class="detail-value">
+                                ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Получено ${currency}</div>
+                            <div class="detail-value">
+                                ${cryptoAmount.toFixed(4)}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Курсовая разница</div>
+                            <div class="detail-value">
+                                ${(sellRate - buyRate).toFixed(2)}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Комиссии</div>
+                            <div class="detail-value">
+                                ${totalFees.toFixed(2)} ₽
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveTransaction()">💾 Сохранить сделку</button>
+                </div>
+            `;
+        }
+
+        function saveTransaction() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const buyRate = parseFloat(document.getElementById('buyRate').value) || 0;
+            const sellRate = parseFloat(document.getElementById('sellRate').value) || 0;
+            const currency = document.getElementById('currency').value || 'USDT';
+            const useCommissions = document.getElementById('useCommissions').checked;
+            const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0;
+            const paymentFee = parseFloat(document.getElementById('paymentFee').value) || 0;
+
+            if (amount === 0 || buyRate === 0 || sellRate === 0) return;
+
+            const cryptoAmount = amount / buyRate;
+            let sellAmount = cryptoAmount * sellRate;
+            
+            let totalFees = 0;
+            if (useCommissions) {
+                const exchangeFeeAmount = (amount * exchangeFee / 100) + (sellAmount * exchangeFee / 100);
+                const paymentFeeAmount = (amount * paymentFee / 100) + (sellAmount * paymentFee / 100);
+                totalFees = exchangeFeeAmount + paymentFeeAmount;
+                sellAmount -= (sellAmount * exchangeFee / 100) + (sellAmount * paymentFee / 100);
+            }
+            
+            const profit = sellAmount - amount - (useCommissions ? (amount * exchangeFee / 100) + (amount * paymentFee / 100) : 0);
+            const profitPercent = (profit / amount) * 100;
+
+            const transaction = {
+                id: Date.now(),
+                date: new Date().toLocaleString('ru-RU'),
+                timestamp: Date.now(),
+                amount,
+                buyRate,
+                sellRate,
+                currency,
+                profit,
+                profitPercent,
+                cryptoAmount,
+                fees: totalFees
+            };
+
+            transactions.unshift(transaction);
+            localStorage.setItem('p2pTransactions', JSON.stringify(transactions));
+            
+            checkAchievements();
+            updateHistory();
+            updateStats();
+            updateChart();
+            updateGoalProgress();
+
+            document.getElementById('amount').value = '';
+            document.getElementById('buyRate').value = '';
+            document.getElementById('sellRate').value = '';
+            calculateProfit();
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (transactions.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">Пока нет сделок. Рассчитайте прибыль и сохраните первую сделку!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            historyList.innerHTML = transactions.map(tx => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div class="history-date">${tx.date}</div>
+                        <button class="history-delete" onclick="deleteTransaction(${tx.id})">×</button>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-detail">
+                            <div class="history-detail-label">Валюта</div>
+                            <div class="history-detail-value">${tx.currency}</div>
+                        </div>
+                        <div class="history-detail">
+                            <div class="history-detail-label">Сумма</div>
+                            <div class="history-detail-value">${tx.amount.toLocaleString('ru-RU')} ₽</div>
+                        </div>
+                        <div class="history-detail">
+                            <div class="history-detail-label">Прибыль</div>
+                            <div class="history-detail-value ${tx.profit >= 0 ? 'history-profit' : 'history-loss'}">
+                                ${tx.profit >= 0 ? '+' : ''}${tx.profit.toFixed(2)} ₽
+                            </div>
+                        </div>
+                        <div class="history-detail">
+                            <div class="history-detail-label">Доходность</div>
+                            <div class="history-detail-value ${tx.profitPercent >= 0 ? 'history-profit' : 'history-loss'}">
+                                ${tx.profitPercent >= 0 ? '+' : ''}${tx.profitPercent.toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const totalTrades = transactions.length;
+            const totalProfit = getTotalProfit();
+            const avgPercent = totalTrades > 0 ? transactions.reduce((sum, tx) => sum + tx.profitPercent, 0) / totalTrades : 0;
+            const bestTrade = totalTrades > 0 ? Math.max(...transactions.map(tx => tx.profit)) : 0;
+
+            document.getElementById('totalTrades').textContent = totalTrades;
+            document.getElementById('totalProfit').textContent = `${totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)} ₽`;
+            document.getElementById('totalProfit').className = `stat-value ${totalProfit >= 0 ? 'profit' : 'loss'}`;
+            document.getElementById('avgPercent').textContent = `${avgPercent >= 0 ? '+' : ''}${avgPercent.toFixed(2)}%`;
+            document.getElementById('bestTrade').textContent = `+${bestTrade.toFixed(2)} ₽`;
+        }
+
+        function getTotalProfit() {
+            return transactions.reduce((sum, tx) => sum + tx.profit, 0);
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Удалить эту сделку?')) {
+                transactions = transactions.filter(tx => tx.id !== id);
+                localStorage.setItem('p2pTransactions', JSON.stringify(transactions));
+                updateHistory();
+                updateStats();
+                updateChart();
+                updateGoalProgress();
+                checkAchievements();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Удалить ВСЮ историю сделок? Это действие нельзя отменить!')) {
+                transactions = [];
+                localStorage.setItem('p2pTransactions', JSON.stringify(transactions));
+                updateHistory();
+                updateStats();
+                updateChart();
+                updateGoalProgress();
+                checkAchievements();
+            }
+        }
+
+        function exportToCSV() {
+            if (transactions.length === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+
+            const headers = ['Дата', 'Валюта', 'Сумма', 'Курс покупки', 'Курс продажи', 'Прибыль', 'Доходность %', 'Комиссии'];
+            const rows = transactions.map(tx => [
+                tx.date,
+                tx.currency,
+                tx.amount,
+                tx.buyRate,
+                tx.sellRate,
+                tx.profit.toFixed(2),
+                tx.profitPercent.toFixed(2),
+                tx.fees.toFixed(2)
+            ]);
+
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `p2p-history-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Charts
+        let profitChart = null;
+
+        function updateChart() {
+            const ctx = document.getElementById('profitChart');
+            if (!ctx) return;
+
+            const last10 = transactions.slice(0, 10).reverse();
+            const labels = last10.map((tx, i) => `Сделка ${transactions.length - 9 + i}`);
+            const data = last10.map(tx => tx.profit);
+
+            const isDark = theme === 'dark';
+            const textColor = isDark ? '#8892a6' : '#64748b';
+            const gridColor = isDark ? 'rgba(42, 49, 66, 0.5)' : 'rgba(226, 232, 240, 0.5)';
+
+            if (profitChart) {
+                profitChart.destroy();
+            }
+
+            profitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Прибыль (₽)',
+                        data: data,
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#00ff88',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: gridColor
+                            },
+                            ticks: {
+                                color: textColor,
+                                callback: function(value) {
+                                    return value + '₽';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Goals
+        function setGoal() {
+            const goalAmount = parseFloat(document.getElementById('goalAmount').value);
+            if (!goalAmount || goalAmount <= 0) {
+                alert('Введите корректную цель');
+                return;
+            }
+
+            goal = {
+                amount: goalAmount,
+                startDate: new Date().toISOString()
+            };
+
+            localStorage.setItem('p2pGoal', JSON.stringify(goal));
+            updateGoalProgress();
+        }
+
+        function updateGoalProgress() {
+            const progressDiv = document.getElementById('goalProgress');
+            
+            if (!goal) {
+                progressDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">Установите цель для отслеживания прогресса</p>';
+                return;
+            }
+
+            const totalProfit = getTotalProfit();
+            const progress = Math.min((totalProfit / goal.amount) * 100, 100);
+            const remaining = Math.max(goal.amount - totalProfit, 0);
+            const avgProfit = transactions.length > 0 ? totalProfit / transactions.length : 0;
+            const tradesNeeded = avgProfit > 0 ? Math.ceil(remaining / avgProfit) : 0;
+
+            progressDiv.innerHTML = `
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <div class="goal-stats">
+                    <div class="goal-stat">
+                        <div class="goal-stat-label">Прогресс</div>
+                        <div class="goal-stat-value">${progress.toFixed(0)}%</div>
+                    </div>
+                    <div class="goal-stat">
+                        <div class="goal-stat-label">Осталось</div>
+                        <div class="goal-stat-value">${remaining.toFixed(0)}₽</div>
+                    </div>
+                    <div class="goal-stat">
+                        <div class="goal-stat-label">Сделок нужно</div>
+                        <div class="goal-stat-value">${tradesNeeded}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Achievements
+        function checkAchievements() {
+            let newUnlocked = false;
+            
+            achievementsList.forEach(ach => {
+                if (!achievements[ach.id] && ach.check()) {
+                    achievements[ach.id] = true;
+                    newUnlocked = true;
+                    showAchievementNotification(ach);
+                }
+            });
+
+            if (newUnlocked) {
+                localStorage.setItem('p2pAchievements', JSON.stringify(achievements));
+            }
+
+            updateAchievements();
+        }
+
+        function updateAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            
+            grid.innerHTML = achievementsList.map(ach => {
+                const unlocked = achievements[ach.id] || false;
+                return `
+                    <div class="achievement ${unlocked ? 'unlocked' : 'locked'}">
+                        ${unlocked ? '<div class="achievement-badge">✓</div>' : ''}
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-title">${ach.title}</div>
+                        <div class="achievement-desc">${ach.desc}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showAchievementNotification(ach) {
+            // Simple alert for now - can be enhanced with custom notification
+            setTimeout(() => {
+                alert(`🎉 Достижение разблокировано!\n\n${ach.icon} ${ach.title}\n${ach.desc}`);
+            }, 500);
+        }
+
+        function checkWinStreak(count) {
+            if (transactions.length < count) return false;
+            return transactions.slice(0, count).every(tx => tx.profit > 0);
+        }
+
+        function checkDailyStreak() {
+            if (transactions.length < 7) return false;
+            const days = new Set();
+            transactions.forEach(tx => {
+                const date = new Date(tx.timestamp);
+                days.add(date.getDay());
+            });
+            return days.size >= 7;
+        }
+
+        // Share Stats
+        async function shareStats() {
+            if (transactions.length === 0) {
+                alert('Нет данных для шаринга. Сначала сохраните несколько сделок!');
+                return;
+            }
+
+            const shareDiv = document.createElement('div');
+            shareDiv.style.position = 'fixed';
+            shareDiv.style.left = '-9999px';
+            shareDiv.innerHTML = `
+                <div class="share-preview" style="width: 600px;">
+                    <div class="share-title">💰 Мои P2P результаты</div>
+                    <div class="share-stats">
+                        <div class="share-stat">
+                            <div class="share-stat-label">Всего сделок</div>
+                            <div class="share-stat-value">${transactions.length}</div>
+                        </div>
+                        <div class="share-stat">
+                            <div class="share-stat-label">Общая прибыль</div>
+                            <div class="share-stat-value">+${getTotalProfit().toFixed(0)}₽</div>
+                        </div>
+                        <div class="share-stat">
+                            <div class="share-stat-label">Средняя доходность</div>
+                            <div class="share-stat-value">${(transactions.reduce((sum, tx) => sum + tx.profitPercent, 0) / transactions.length).toFixed(1)}%</div>
+                        </div>
+                        <div class="share-stat">
+                            <div class="share-stat-label">Лучшая сделка</div>
+                            <div class="share-stat-value">+${Math.max(...transactions.map(tx => tx.profit)).toFixed(0)}₽</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 32px; font-size: 14px; opacity: 0.8;">P2P Calculator Ultimate</div>
+                </div>
+            `;
+            document.body.appendChild(shareDiv);
+
+            try {
+                const canvas = await html2canvas(shareDiv.querySelector('.share-preview'));
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `p2p-stats-${new Date().toISOString().split('T')[0]}.png`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(shareDiv);
+                    alert('📸 Скриншот статистики сохранен! Можете поделиться в соцсетях 🔥');
+                });
+            } catch (e) {
+                alert('Ошибка при создании скриншота');
+                document.body.removeChild(shareDiv);
+            }
+        }
+
+        // Initialize
+        updateHistory();
+        updateStats();
+        updateChart();
+        updateGoalProgress();
+        checkAchievements();
+    </script>
+</body>
+</html>
